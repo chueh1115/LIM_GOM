@@ -181,6 +181,11 @@ POC_W->SED =13.4 {mgC/m2/d}
 ! The numerical values (min... and max...) are defined in the parameter section (see above)
 ! The definition of the variable names is in the variable section (see above)
 
+!--SEDEMENT: flow {mgC/m2/d} = dr {/d} * OC {mgC/m2}
+
+SED->EXP_S + SED->BAC + SED->MEI + SED->MAC + SED->MEG + SED->FIS= [minSEDdr,maxSEDdr] * SED
+
+
 !--Respiration
 MEIres = [minMEIresp, maxMEIresp]
 MACres = [minMACresp, maxMACresp]
