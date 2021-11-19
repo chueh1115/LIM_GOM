@@ -5,7 +5,7 @@ setwd("C:/Users/user/Downloads/labWei/Tung_thesis/LIM_gulf of mexico/")
 #-- Load the LIM (and limSolve) package 
 library(LIM)
 library(splus2R)
-
+sgfesrger
 ##   1)   MODEL SETUP
 #-- Define directory that contains the input file
 DataDir <- "C:/Users/user/Downloads/labWei/Tung_thesis/LIM_gulf of mexico/"
