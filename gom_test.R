@@ -1,17 +1,17 @@
 rm(list=ls())
 
-setwd("C:/Users/user/Downloads/labWei/Tung_thesis/LIM_gulf of mexico/")
+# setwd("C:/Users/user/Downloads/labWei/Tung_thesis/LIM_gulf of mexico/")
 
 #-- Load the LIM (and limSolve) package 
 library(LIM)
 library(splus2R)
-sgfesrger
 ##   1)   MODEL SETUP
 #-- Define directory that contains the input file
-DataDir <- "C:/Users/user/Downloads/labWei/Tung_thesis/LIM_gulf of mexico/"
+# DataDir <- "C:/Users/user/Downloads/labWei/Tung_thesis/LIM_gulf of mexico/"
+
 #-- Read the ascii files
-File<- paste(DataDir,"gom_S42.input",sep="")  
-LIM<- Setup(file=File) 
+# File<- paste(DataDir,"gom_S42.input",sep="")  
+LIM<- Setup(file="gom_S42.input") 
 ##   2)  Parsimonious method
 # Find the solution range of each flow
 flowSol <- Xranges(LIM)
@@ -29,14 +29,16 @@ plotweb(Flowmatrix(LIM),main="gom_MT1",
 ##   3)  Likelihood method
 #-- SSA is not based on ecological theory
 xranges<-Xranges(LIM)
+xranges
 x0 <- lsei(E=LIM$A,
            F=LIM$B,
            A=diag(LIM$NUnknowns),
            B=rowMeans(xranges),
            G=LIM$G,
            H=LIM$H)$X
-iter<-100
-jumpsize<-10000
+iter<-3000
+
+jumpsize<-1
 xs <- xsample(E    = LIM$A,
               F    = LIM$B,
               G    = LIM$G,
@@ -44,7 +46,7 @@ xs <- xsample(E    = LIM$A,
               jmp  = (xranges[,2] - xranges[,1])/jumpsize,
               x0   = x0,
               iter = iter)
-nameoutput <- "gom_S42_1000.Rdata" #100=iteration
+nameoutput <- "gom_S42_3000.Rdata" #100=iteration
 save(xs, LIM, file=nameoutput)
 
 #check: 
@@ -101,7 +103,7 @@ mean(samplerange$percCover, na.rm = T)
 name<-LIM$Unknowns
 windows()
 dotchart(x=pars$X,col = 1,
-         pch=16,xlim = c(0,400))
+         pch=16,xlim = c(0,80))
 points(x=LA$mean,1:27,col=10,pch=18)
 segments(LA$sd,1:27,LA$sd,1:27)
 legend("right",pch=c(16,18,NA),lty=c(NA,NA,1),col=c(1,10,1),
@@ -206,8 +208,8 @@ p = sankeyNetwork(Links = valuelinks, Nodes = nodes,
                   Value = "value", NodeID = "name",
                   fontSize = 16, nodeWidth = 40,
                   colourScale = node_color,
-                  LinkGroup="group",unit="mgC/m2/d")%>%saveNetwork("MT_1_value.html")
-
+                  LinkGroup="group",unit="mgC/m2/d")%>%saveNetwork("S42_value.html")
+p
 perclinks = as.data.frame(matrix(c(
   0, 7, LA$mean[3]/sum(LA$mean[2:7]), 0, 8, LA$mean[4]/sum(LA$mean[2:7]), 0, 9, LA$mean[5]/sum(LA$mean[2:7]), 0, 10, LA$mean[6]/sum(LA$mean[2:7]), 0, 11, LA$mean[7]/sum(LA$mean[2:7]),
   1, 6, LA$mean[8]/sum(LA$mean[8:12]), 1, 8, LA$mean[9]/sum(LA$mean[8:12]), 1, 9, LA$mean[10]/sum(LA$mean[8:12]), 1, 10, LA$mean[11]/sum(LA$mean[8:12]),
@@ -234,17 +236,13 @@ perclinks$group = c("type_0", "type_0","type_0","type_0","type_0",
                      "type_4","type_5",
                      "type_0")
 ## Draw Sankey Diagram (%)
-p = sankeyNetwork(Links = perclinks, Nodes = nodes,
+q = sankeyNetwork(Links = perclinks, Nodes = nodes,
                   Source = "source", Target = "target",
                   Value = "value", NodeID = "name",
                   fontSize = 16, nodeWidth = 40,
                   colourScale = node_color,
-                  LinkGroup="group",unit="%")%>%saveNetwork("MT_1_percentage.html")
-
-library(wesanderson)
-  ?wes_palette()
-wes_palette("Royal1")
-
+                  LinkGroup="group",unit="%")%>%saveNetwork("S42_percentage.html")
+q
 #Extracts and sum the flows which formed the variables 
 #Varranges():find solution ranges of the defined variable
 varrange<-Varranges(LIM)
