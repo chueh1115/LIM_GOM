@@ -1,0 +1,197 @@
+Data:Gulf of Mexico_S42
+Author: Tung Chueh Chen
+Date:2021.11.19
+#####################################################################
+
+## COMPARTMENTS 
+! The compartments and their magnitude values 
+! are defined in the parameter section
+! Mass balances are set up for these compartments
+
+SED		=SEDSS       
+BAC		=BACSS       
+MEI		=MEISS    
+MAC		=MACSS
+MEG		=MEGSS
+FIS		=FISSS
+## END COMPARTMENTS
+
+## EXTERNALS 
+! The compartments that are external to the food web.
+! No mass balances for these compartments are defined in the LIM
+
+POC_W
+EXP_S
+DIC_W
+EXP_B
+
+## END EXTERNALS
+
+## RATE
+! The rate of change of each compartment
+! These are zero for mass balances in steady-state
+
+SED		= 0.0       
+BAC		= 0.0       
+MEI		= 0.0    
+MAC		= 0.0
+MEG		= 0.0
+FIS		= 0.0
+
+## END RATE
+
+################################ PARAMETERS                         
+! Parameter names are linked to a value
+! These are used later to increase the readability of the file (see below)
+
+!-- Stocks
+SEDSS		=375000
+BACSS		=1855
+MEISS		=197
+MACSS		=60
+MEGSS		=7.9
+FISSS		=24.7
+
+
+!-- Constraints
+!-- Estimated Respiration
+minMEIresp = 0     {mgC/m2/d}
+maxMEIresp = 11.6   {mgC/m2/d}
+minMACresp = 0     {mgC/m2/d}
+maxMACresp = 1.62  {mgC/m2/d}
+minMEGresp = 0     {mgC/m2/d}
+maxMEGresp =  0.023 {mgC/m2/d}
+minFISresp = 0     {mgC/m2/d}
+maxFISresp = 0.21  {mgC/m2/d}
+
+!-- Growth efficiency
+minMEIsp = 0   {fraction} !Meio secodary production
+maxMEIsp = 0.1 {fraction}
+minMACsp = 0   {fraction} !Macro secodary production
+maxMacsp = 0.1 {fraction}  
+minMEGsp = 0    {fraction} !Mega secodary production
+maxMEGsp = 0.1  {fraction} 
+minFISsp = 0    {fraction} !Fish secodary production
+maxFISsp = 0.1  {fraction} 
+
+minBACge  = 0.36  {fraction}  !BAC growth efficiency
+maxBACge  = 0.61  {fraction}
+
+!-- Degradation rate  
+minSEDdr  =  0.0000219     {/d} !Sediment degradation rate(must multiply SEDSS)
+maxSEDdr  =  0.0016        {/d}
+
+################################ END PARAMETERS                     
+
+################################ VARIABLES
+! Defition of variables
+! Each variable name is linked to a combination of flows 
+! Variables are used to increase the readability of the equalities and inequalities (see below)
+! Bacteria
+BACres    = BAC->DIC_W
+BACgrow   = flowto(BAC) - BACres ! growth: ingestion - respiration
+
+! Consumption: {mgC/m2/d}
+MEIcs	= flowto(MEI)     !MEI consumption
+MACcs	= flowto(MAC)     !Mac consumption
+MEGcs	=	flowto(MEG)    	!Mega consumption
+FIScs	= flowto(FIS)   	!Fish consumption
+
+! Defacation: {mgC/m2/d}
+MEIfae = MEI->SED      !MEI produced faeces
+MACfae = MAC->SED      !MAC produced faeces
+MEGfae = MEG->SED      !MEG produced faeces
+FISfae = FIS->SED      !FIS produced faeces
+
+! Assimilation: {mgC/m2/d} 
+MEIass = MEIcs - MEIfae
+MACass = MACcs - MACfae
+MEGass = MEGcs - MEGfae
+FISass = FIScs - FISfae
+
+! Respiration {mgC/m2/d}
+MEIres = MEI->DIC_W
+MACres = MAC->DIC_W
+MEGres = MEG->DIC_W
+FISres = FIS->DIC_W
+
+! Net growth: {mgC/m2/d}
+MEIng = MEIcs - MEIfae - MEIres
+MACng = MACcs - MACfae - MACres
+MEGng = MEGcs - MEGfae - MEGres
+FISng = FIScs - FISfae - FISres
+
+################################ END VARIABLES
+
+################################ FLOW 
+! Definition of the trophic flows between the comparments and/or the externals
+
+!-- SEDiment
+POC_w  ->  SED	!POC particle rain to sediment 
+SED  ->  EXP_S	!Sediment export
+SED  ->  BAC	!SEDritus uptaken by bacteria
+SED  ->  MEI 	!SEDritus uptaken by meiofauna
+SED  ->  MAC 	!SEDritus uptaken by macrofauna
+SED  ->  MEG 	!SEDritus uptaken by megafauna
+SED  ->  FIS 	!SEDritus uptaken by fish
+
+!-- BACteria
+BAC  ->  SED	!viral lysis
+BAC  ->  MEI	!bac grazed by meiofauna
+BAC  ->  MAC	!bac grazed by macrofauna
+BAC  ->  MEG	!bac grazed by megafauna
+BAC  ->  DIC_W 	!bacteria respiration
+
+!-- MEIofauna
+MEI  ->  SED 	!meiofauna feces
+MEI  ->  MAC 	!meiofauna preyed by macro
+MEI  ->  MEG 	!meiofauna preyed by mega
+MEI  ->  DIC_W 	!meio respiration
+
+! MACrobenthos
+MAC  ->  SED 		!macro feces
+MAC  ->  MEG		!macro preyed by mega
+MAC  ->  FIS 		!macro preyed by fish
+MAC  ->  DIC_W 	!macro respiration
+
+! Megafauna
+MEG  ->  SED 		!mega feces
+MEG  ->  FIS 		!mega preyed by fish
+MEG  ->  DIC_W 	!mega respiration
+MEG  ->  EXP_B	 	!mega loss to predation
+
+! Fish
+FIS  ->  SED 	!fish feces
+FIS  ->  DIC_W 	!fish respiration
+FIS  ->  EXP_B	!fish loss to predation and fishery
+
+################################ END FLOW
+
+################################ EQUATION 
+! Definition of the equalities for the equality equation
+
+!-- POC
+POC_W->SED =13.4 {mgC/m2/d}
+
+################################ END EQUATION
+
+################################ CONSTRAINT 
+! Inequalities for the inequality equation
+! but assuming that the reported value has an error of +/- 25%
+! The numerical values (min... and max...) are defined in the parameter section (see above)
+! The definition of the variable names is in the variable section (see above)
+
+!--Respiration
+MEIres = [minMEIresp, maxMEIresp]
+MACres = [minMACresp, maxMACresp]
+MEGres = [minMEGresp, maxMEGresp]
+FISres = [minFISresp, maxFISresp]
+
+!--Growth efficiency
+BACgrow=flowto(BAC)*[minBACge, maxBACge]
+MEIcs-MEIfae-MEIres=[minMEIsp, maxMEIsp]*MEIcs-[minMEIsp, maxMEIsp]*MEIfae
+MACcs-MACfae-MACres=[minMACsp, maxMACsp]*MEIcs-[minMACsp, maxMACsp]*MACfae
+MEGcs-MEGfae-MEGres=[minMEGsp, maxMEGsp]*MEGcs-[minMEGsp, maxMEGsp]*MEGfae
+FIScs-FISfae-FISres=[minFISsp, maxFISsp]*FIScs-[minFISsp, maxFISsp]*FISfae
+
+################################ END CONSTRAINT

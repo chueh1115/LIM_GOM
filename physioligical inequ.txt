@@ -1,0 +1,19 @@
+BACgrow = [minBacGrowth, maxBacGrowth]
+BACgrow = flowto(BAC) * [minBACge,maxBACge]   ! growth= ingestion * growth efficiency
+
+!--Assimilation{mgC/m2/d} = ass{mgC/m2/d} * AE{fration}
+MEIass    = flowto(MEI) * [minMEIae, maxMEIae]
+MACass    = flowto(MAC) * [minMACae, maxMACae]
+MEGass    = flowto(MEG) * [minMEGae, maxMEGae]
+FISass    = flowto(FIS) * [minFISae, maxFISae]
+
+MEIng     = MEIass *  [minMEInge, maxMEInge]
+MACng     = MACass *  [minMACnge, maxMACnge]
+MEGng     = MEGass *  [minMEGnge, maxMEGnge]
+FISng     = FISass *  [minFISnge, maxFISnge]
+
+MEIng     = [minMEIpb, maxMEIpb] * MEI
+MACng     = [minMACpb, maxMACpb] * MAC
+MEGng     = [minMEGpb, maxMEGpb] * MEG
+FISng     = [minFISpb, maxFISpb] * FIS
+

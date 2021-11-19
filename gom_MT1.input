@@ -1,0 +1,200 @@
+
+Data    :   Input file for gulf of mexico-MT1 under-SEDermined LIM
+
+Units   :   Fluxes:             mmol /m2/d
+Standing stocks:    mmol /m2
+
+Tung 2021.10.20
+
+#####################################################################
+
+################################ PARAMETERS                         
+! Parameter names are linked to a value
+! These are used later to increase the readability of the file (see below)
+!-- Tlim
+Tlim        =0.35
+
+!-- Stocks
+SEDSS		=76000
+BACSS		=2585
+MEISS		=208
+MACSS		=816
+MEGSS		=30.6
+FISSS		=35.9
+
+!-- Maintenance Respiration
+MEImr= Tlim * 0.01 * MEISS	           
+MACmr= Tlim * 0.01 * MACSS
+MEGmr= Tlim * 0.01 * MEGSS
+FISmr= Tlim * 0.01 * FISSS
+
+!-- Constraints
+minBACge  = 0.02   ! Meio assimilation efficiency
+maxBACge  = 0.61
+minMEIae  = 0.456   ! Meio assimilation efficiency
+maxMEIae  = 0.699
+minMEIpb  =  0.009  ! Meio PB ratio
+maxMEIpb  =  0.0493
+minMEInge	=	0.3	!Meio NGE
+maxMEInge	=	0.5
+minMACae  = 0.6   ! Macro assimilation efficiency
+maxMACae  = 0.7
+minMACpb  =  8.49*0.0001  ! Macro PB ratio
+maxMACpb  =  4.77*0.001
+minMACnge  = 0.6   ! Macro net growth efficiency
+maxMACnge  = 0.72
+minMEGae	=	0.48		!Mega assimilation efficiency
+maxMEGae	=	0.8
+minMEGpb	=	2.74*0.0001	!Mega pb ratio
+maxMEGpb	=	1.42*0.01
+minMEGnge	=	0.276	!Mega nge
+maxMEGnge	=	0.725
+minFISae  = 0.84   !Fish assimilation efficiency
+maxFISae  = 0.865
+minFISpb  = 0.0018   !Fish PB ratio
+maxFISpb  = 0.0082
+minFISnge	=	0.37		!Fish nge
+maxFISnge	=	0.71
+minSEDdr  =  0.00025  !Sediment degradation rate
+maxSEDdr  =  0.016
+
+################################ END PARAMETERS                     
+
+################################ VARIABLES
+! Defition of variables
+! Each variable name is linked to a combination of flows 
+! Variables are used to increase the readability of the equalities and inequalities (see below)
+MEIcs	=	SED -> MEI + BAC -> MEI		!MEI consumption
+MACcs	= SED -> MAC + BAC -> MAC + MEI -> MAC  !Mac consumption
+MEGcs	=	SED -> MEG + BAC -> MEG + MEI -> MEG + MAC -> MEG	!Mega consumption
+FIScs		= 	SED -> FIS + MAC -> FIS+ MEG -> FIS	!Fish consumption
+MEIgr= MEI -> DIC_W - MEImr		!MEIo growth respiration
+MACgr= MAC -> DIC_W - MACmr		!MACro growth respiration
+MEGgr= MEG -> DIC_W - MEGmr		!MEGro growth respiration
+FISgr= FIS-> DIC_W - FISmr		!FISh growth respiration
+
+################################ END VARIABLES
+
+################################ STOCK 
+! Definition of the compartments and their magnitude
+! Values are defined in the parameter section
+! Mass balances are set up for these compartments
+
+SED		=SEDSS       
+BAC		=BACSS       
+MEI		=MEISS    
+MAC		=MACSS
+MEG		=MEGSS
+FIS		=FISSS
+
+################################ END STOCK
+
+################################ EXTERNALS 
+! Definition of the compartments that are part of 
+! the world external to the food web.
+! No mass balances for these compartments are defined in the LIM
+
+POC_W
+EXP_S
+DIC_W
+EXP_B
+
+################################ END EXTERNALS
+
+################################ FLOW 
+! 
+!-- SEDiment
+POC_W  ->  SED	!POC particle rain to sediment 
+SED  ->  EXP_S	!Sediment export
+SED  ->  BAC	!SEDritus uptaken by bacteria
+SED  ->  MEI 	!SEDritus uptaken by meiofauna
+SED  ->  MAC 	!SEDritus uptaken by macrofauna
+SED  ->  MEG 	!SEDritus uptaken by megafauna
+SED  ->  FIS 	!SEDritus uptaken by fish
+
+!-- BACteria
+BAC  ->  SED	!viral lysis
+BAC  ->  MEI	!bac grazed by meiofauna
+BAC  ->  MAC	!bac grazed by macrofauna
+BAC  ->  MEG	!bac grazed by megafauna
+BAC  ->  DIC_W 	!bacteria respiration
+
+!-- MEIofauna
+MEI  ->  SED 	!meiofauna feces
+MEI  ->  MAC 	!meiofauna preyed by macro
+MEI  ->  MEG 	!meiofauna preyed by mega
+MEI  ->  DIC_W 	!meio respiration
+
+! MACrobenthos
+MAC  ->  SED 		!macro feces
+MAC  ->  MEG		!macro preyed by mega
+MAC  ->  FIS 		!macro preyed by fish
+MAC  ->  DIC_W 	!macro respiration
+
+! Megafauna
+MEG  ->  SED 		!mega feces
+MEG  ->  FIS 		!mega preyed by fish
+MEG  ->  DIC_W 	!mega respiration
+MEG  ->  EXP_B	 	!mega loss to predation
+
+! Fish
+FIS  ->  SED 	!fish feces
+FIS  ->  DIC_W 	!fish respiration
+FIS  ->  EXP_B	!fish loss to predation and fishery
+
+################################ END FLOW
+
+################################ RATE  
+! The rate of change of each compartment
+! These are zero for mass balances in steady-state
+
+SED		=0.0       
+BAC		=0.0       
+MEI		=0.0
+MAC		=0.0
+MEG		=0.0
+FIS		=0.0
+################################ END RATE
+
+################################ EQUATION 
+! Definition of the equalities for the equality equation
+!--POC
+POC_W  ->  SED = 77.7
+!-- SCOC
+BAC->DIC_W + MEI->DIC_W + MAC->DIC_W + MEG->DIC_W + FIS->DIC_W = 36.5
+
+################################ END EQUATION
+
+################################ CONSTRAINT 
+! Inequalities for the inequality equation
+! but assuming that the reported value has an error of +/- 25%
+! The numerical values (min... and max...) are defined in the parameter section (see above)
+! The definition of the variable names is in the variable section (see above)
+
+!-- SED             
+SED  ->  EXP_S + SED  ->  BAC + SED  ->  MEI + SED  ->  MAC + SED  ->  MEG + SED  ->  FIS	= [minSEDdr,maxSEDdr]*SEDSS	!SEDritus degradation rate
+
+!-- BACteria
+SED  ->  BAC - BAC -> DIC_W	=  [minBACge,maxBACge]* SED ->BAC      !Bacteria growth efficiency
+
+!¡XMEI
+MEIcs - MEI -> SED		= [minMEIae ,maxMEIae]* MEIcs	!meio assimilation efficiency
+MEIcs- MEI->SED - MEIgr =[minMEInge,maxMEInge]*MEIcs-[minMEInge,maxMEInge]* MEI->SED		!meio net growth efficiency
+MEIcs - MEI -> SED - MEIgr	=  [minMEIpb,maxMEIpb]*MEISS		!meio production
+
+!-- MAC
+MACcs - MAC -> SED		= [minMACae ,maxMACae]*MACcs	!macrobenthos assimilation efficiency
+MACcs - MAC -> SED - MACgr	=  [minMACnge,maxMACnge]* MACcs-[minMACnge,maxMACnge]* MAC -> SED	! macrobenthos net growth efficiency
+MACcs - MAC -> SED - MACgr	=  [minMACpb,maxMACpb]*MACSS	! macro production
+
+!-- MEG
+MEGcs - MEG -> SED		= [minMEGae ,maxMEGae]* MEGcs	!mega assimilation efficiency
+MEGcs- MEG->SED-MEGgr =[minMEGnge,maxMEGnge]*MEGcs-[minMEGnge,maxMEGnge]* MEG->SED		!mega net growth efficiency
+MEGcs - MEG -> SED - MEGgr	=  [minMEIpb,maxMEIpb]*MEGSS		!mega production
+
+!-- FIS
+FIScs - FIS -> SED		= [minFISae ,maxFISae]* FIScs	!fish assimilation efficiency
+FIScs- FIS->SED - FISgr =[minFISnge,maxFISnge]*FIScs-[minFISnge,maxFISnge]* FIS->SED		!meio net growth efficiency
+FIScs - FIS -> SED - FISgr	=  [minFISpb,maxFISpb]*FISSS		!fish production
+
+################################ END CONSTRAINT
